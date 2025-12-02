@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -16,26 +16,11 @@ import {
   Snackbar,
   Alert,
   Badge,
-  CardMedia,
-  CardActions,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
 import OrderCompleteModal from './OrderCompleteModal';
 import {
@@ -53,14 +38,7 @@ interface Product {
   image?: string;
 }
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-}
+
 
 const categories = [
   'Hatay Usulü Dönerler',
@@ -305,56 +283,7 @@ const products: Product[] = [
  
 ];
 
-const menuItems: MenuItem[] = [
-  {
-    id: '1',
-    name: 'Döner Porsiyon',
-    description: 'Özel soslu döner porsiyon',
-    price: 120,
-    image: '/images/doner.jpg',
-    category: 'Ana Yemekler'
-  },
-  {
-    id: '2',
-    name: 'İskender',
-    description: 'Özel domates soslu iskender',
-    price: 150,
-    image: '/images/iskender.jpg',
-    category: 'Ana Yemekler'
-  },
-  {
-    id: '3',
-    name: 'Lahmacun',
-    description: 'İnce hamurlu lahmacun',
-    price: 45,
-    image: '/images/lahmacun.jpg',
-    category: 'Fast Food'
-  },
-  {
-    id: '4',
-    name: 'Pide',
-    description: 'Kaşarlı pide',
-    price: 60,
-    image: '/images/pide.jpg',
-    category: 'Fast Food'
-  },
-  {
-    id: '5',
-    name: 'Ayran',
-    description: 'Soğuk ayran',
-    price: 15,
-    image: '/images/ayran.jpg',
-    category: 'İçecekler'
-  },
-  {
-    id: '6',
-    name: 'Kola',
-    description: 'Soğuk kola',
-    price: 20,
-    image: '/images/kola.jpg',
-    category: 'İçecekler'
-  }
-];
+
 
 const OrderScreen: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -363,11 +292,7 @@ const OrderScreen: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(categories[0]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [quantities, setQuantities] = useState<Record<string | number, number>>({});
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [paymentType, setPaymentType] = useState<'cash' | 'card'>('cash');
   const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   const handleQuantityChange = (productId: string | number, change: number) => {
@@ -471,15 +396,6 @@ const OrderScreen: React.FC = () => {
                 <span class="price">${calculateDeliveryFee().toFixed(2)}₺</span>
                 <div class="clear"></div>
               </div>
-              <div class="divider"></div>
-              <div>
-                <p>📱 Telefon: ${phone || '-'}</p>
-                <p>📍 Adres: ${address || '-'}</p>
-              </div>
-              <div class="divider"></div>
-              <div>
-                <p>💳 Ödeme Tipi: ${paymentType === 'cash' ? 'Nakit' : 'Kredi Kartı'}</p>
-              </div>
             ` : ''}
             <div class="divider"></div>
             <div class="total right">
@@ -502,34 +418,13 @@ const OrderScreen: React.FC = () => {
     setCart([]);
     setQuantities({});
 
-    // Modalı kapat
-    setIsOrderModalOpen(false);
-
     // Başarı mesajını göster
     setShowSuccessMessage(true);
   };
 
 
 
-  const handleAddToCart = (item: MenuItem) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
-      if (existingItem) {
-        return prevCart.map(cartItem =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
-      }
-      return [...prevCart, { 
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: 1,
-        category: item.category
-      }];
-    });
-  };
+
 
   const filteredProducts = products.filter(
     (product) => product.category === selectedCategory
