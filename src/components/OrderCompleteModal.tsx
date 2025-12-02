@@ -48,50 +48,17 @@ const OrderCompleteModal: React.FC<OrderCompleteModalProps> = ({
   const { addOrder } = useOrders();
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [lastFourDigits, setLastFourDigits] = useState('');
   const [paymentType, setPaymentType] = useState<'cash' | 'card'>('cash');
-  const [receiptNumber, setReceiptNumber] = useState(() => {
-    const savedNumber = localStorage.getItem('receiptNumber');
-    const savedDate = localStorage.getItem('receiptDate');
-    const today = new Date().toDateString();
-
-    if (savedDate === today && savedNumber) {
-      return parseInt(savedNumber, 10);
-    }
-    return 1;
-  });
+  const [receiptNumber, setReceiptNumber] = useState(1);
 
   // Reset input fields when modal opens
   useEffect(() => {
     if (open) {
       setPhone('');
       setAddress('');
-      setLastFourDigits('');
       setPaymentType('cash');
     }
   }, [open]);
-
-  useEffect(() => {
-    const savedDate = localStorage.getItem('receiptDate');
-    const today = new Date().toDateString();
-
-    if (savedDate !== today) {
-      setReceiptNumber(1);
-      localStorage.setItem('receiptDate', today);
-    }
-    localStorage.setItem('receiptNumber', receiptNumber.toString());
-  }, [receiptNumber]);
-
-  useEffect(() => {
-    if (lastFourDigits.length === 4) {
-      const savedPhones = JSON.parse(localStorage.getItem('savedPhones') || '{}');
-      const foundPhone = Object.keys(savedPhones).find(p => p.endsWith(lastFourDigits));
-      if (foundPhone) {
-        setPhone(foundPhone);
-        setAddress(savedPhones[foundPhone].address);
-      }
-    }
-  }, [lastFourDigits]);
 
   const handleComplete = () => {
   const orderItems: OrderItem[] = cart.map(item => ({
@@ -369,15 +336,6 @@ const OrderCompleteModal: React.FC<OrderCompleteModalProps> = ({
 
         {initialOrderType === 'delivery' && (
             <Box sx={{ mt: 3 }}>
-            <TextField
-              fullWidth
-                label="Telefon Son 4 Hanesi"
-              value={lastFourDigits}
-                onChange={(e) => setLastFourDigits(e.target.value)}
-                sx={{ mb: 2 }}
-                inputProps={{ maxLength: 4 }}
-                helperText="Son 4 haneyi girerek kayıtlı bilgileri getirebilirsiniz"
-            />
             <TextField
               fullWidth
               label="Telefon"

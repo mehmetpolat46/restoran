@@ -41,25 +41,7 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [orders, setOrders] = useState<Order[]>(() => {
-    // localStorage'dan siparişleri yükle
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      // Tarihleri Date nesnesine dönüştür
-      return JSON.parse(savedOrders, (key, value) => {
-        if (key === 'date') {
-          return new Date(value);
-        }
-        return value;
-      });
-    }
-    return [];
-  });
-
-  // Siparişler değiştiğinde localStorage'a kaydet
-  useEffect(() => {
-    localStorage.setItem('orders', JSON.stringify(orders));
-  }, [orders]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const addOrder = (order: Omit<Order, 'id' | 'date'>) => {
     const newOrder: Order = {
@@ -112,7 +94,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearOrders = () => {
     setOrders([]);
-    localStorage.removeItem('orders');
   };
 
   return (

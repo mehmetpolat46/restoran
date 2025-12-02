@@ -31,7 +31,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import trLocale from 'date-fns/locale/tr';
-import DeleteIcon from '@mui/icons-material/Delete';
+
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../context/OrderContext';
@@ -64,17 +64,15 @@ function TabPanel(props: TabPanelProps) {
 
 const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
-  const { orders, deleteOrder, getSalesStats } = useOrders();
+  const { orders } = useOrders();
   const [tabValue, setTabValue] = useState(0);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [dateRange, setDateRange] = useState('today');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<{ name: string; quantity: number; total: number } | null>(null);
   const [analysisCategory, setAnalysisCategory] = useState('all');
   const [analysisProductName, setAnalysisProductName] = useState('');
 
-  const stats = getSalesStats();
+
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -122,23 +120,7 @@ const AdminPanel: React.FC = () => {
 
 
 
-  // Ürün bazlı satışları hesapla (filtrelenmiş)
-  const productSales = filteredOrders.reduce((acc, order) => {
-    order.items.forEach(item => {
-      const existing = acc.find(p => p.name === item.name);
-      if (existing) {
-        existing.quantity += item.quantity;
-        existing.total += item.price * item.quantity;
-      } else {
-        acc.push({
-          name: item.name,
-          quantity: item.quantity,
-          total: item.price * item.quantity,
-        });
-      }
-    });
-    return acc;
-  }, [] as Array<{ name: string; quantity: number; total: number }>);
+
 
   // stats fonksiyonunu da filtrelenmiş siparişlerle oluştur
   const filteredStats = (() => {
@@ -174,25 +156,7 @@ const AdminPanel: React.FC = () => {
     return stats;
   })();
 
-  const handleDeleteProduct = (product: { name: string; quantity: number; total: number }) => {
-    setSelectedProduct(product);
-    setDeleteDialogOpen(true);
-  };
 
-  const confirmDeleteProduct = () => {
-    if (selectedProduct) {
-      // Seçili ürünü içeren siparişleri bul ve sil
-      const ordersToDelete = orders.filter(order => 
-        order.items.some(item => item.name === selectedProduct.name)
-      );
-      
-      ordersToDelete.forEach(order => {
-        deleteOrder(order.id);
-      });
-    }
-    setDeleteDialogOpen(false);
-    setSelectedProduct(null);
-  };
 
   const analysisChartData = React.useMemo(() => {
     // Tüm siparişlerden ürünleri topla, içeri ve kurye ayrı say
@@ -252,7 +216,6 @@ const AdminPanel: React.FC = () => {
             textColor="primary"
           >
             <Tab label="Kasa" />
-            <Tab label="Raporlar" />
             <Tab label="Analiz" />
           </Tabs>
 
@@ -344,39 +307,6 @@ const AdminPanel: React.FC = () => {
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Ürün Adı</TableCell>
-                    <TableCell align="right">Satış Adedi</TableCell>
-                    <TableCell align="right">Toplam Tutar</TableCell>
-                    <TableCell align="right">İşlemler</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {productSales.map((row) => (
-                    <TableRow key={row.name}>
-                      <TableCell>{row.name}</TableCell>
-                      <TableCell align="right">{row.quantity}</TableCell>
-                      <TableCell align="right">{row.total}₺</TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDeleteProduct(row)}
-                          title="Bu ürünün tüm satışlarını sil"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={2}>
             {/* Analiz Sekmesi */}
             <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
               <FormControl sx={{ minWidth: 200 }}>
@@ -439,27 +369,6 @@ const AdminPanel: React.FC = () => {
 
 
         </Paper>
-
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Ürün Satışlarını Sil</DialogTitle>
-          <DialogContent>
-            <Typography>
-              {selectedProduct?.name} ürününün tüm satışlarını silmek istediğinizden emin misiniz?
-              Bu işlem geri alınamaz.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>İptal</Button>
-            <Button onClick={confirmDeleteProduct} color="error">
-              Sil
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-
       </Container>
     </Box>
   );
