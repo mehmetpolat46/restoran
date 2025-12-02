@@ -25,7 +25,6 @@ import {
   MenuItem,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ExcelExport from './ExcelExport';
 import { useOrders } from '../context/OrderContext';
 import { CartItem, OrderItem } from '../types';
 
