@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
   Typography,
   Paper,
-  Tabs,
-  Tab,
   Table,
   TableBody,
   TableCell,
@@ -13,17 +11,11 @@ import {
   TableHead,
   TableRow,
   Button,
-  TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Chip,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   AppBar,
   Toolbar,
 } from '@mui/material';
@@ -31,52 +23,19 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import trLocale from 'date-fns/locale/tr';
-
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../context/OrderContext';
 import HomeIcon from '@mui/icons-material/Home';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 
 
 const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
   const { orders } = useOrders();
-  const [tabValue, setTabValue] = useState(0);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [dateRange, setDateRange] = useState('today');
-  const [analysisCategory, setAnalysisCategory] = useState('all');
-  const [analysisProductName, setAnalysisProductName] = useState('');
-
-
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
 
   const handleDateRangeChange = (event: any) => {
     const value = event.target.value;
@@ -158,29 +117,6 @@ const AdminPanel: React.FC = () => {
 
 
 
-  const analysisChartData = React.useMemo(() => {
-    // Tüm siparişlerden ürünleri topla, içeri ve kurye ayrı say
-    const stats: { [key: string]: { name: string; dineInQuantity: number; deliveryQuantity: number } } = {};
-    filteredOrders.forEach(order => {
-      order.items.forEach(item => {
-        // Kategori filtresi
-        if (analysisCategory === 'Et' && !item.name.toLowerCase().includes('et')) return;
-        if (analysisCategory === 'Tavuk' && !item.name.toLowerCase().includes('tavuk')) return;
-        // Ürün ismi filtresi
-        if (analysisProductName && !item.name.toLowerCase().includes(analysisProductName.toLowerCase())) return;
-        if (!stats[item.name]) {
-          stats[item.name] = { name: item.name, dineInQuantity: 0, deliveryQuantity: 0 };
-        }
-        if (order.type === 'dine-in') {
-          stats[item.name].dineInQuantity += item.quantity;
-        } else if (order.type === 'delivery') {
-          stats[item.name].deliveryQuantity += item.quantity;
-        }
-      });
-    });
-    return Object.values(stats);
-  }, [filteredOrders, analysisCategory, analysisProductName]);
-
 
 
   return (
@@ -208,166 +144,93 @@ const AdminPanel: React.FC = () => {
       </AppBar>
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Paper sx={{ width: '100%', mb: 2 }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            indicatorColor="primary"
-            textColor="primary"
-          >
-            <Tab label="Kasa" />
-            <Tab label="Analiz" />
-          </Tabs>
+        <Paper sx={{ width: '100%', mb: 2, p: 3 }}>
+          <Typography variant="h5" sx={{ mb: 3 }}>Kasa</Typography>
+          
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>Tarih Aralığı</InputLabel>
+              <Select
+                value={dateRange}
+                label="Tarih Aralığı"
+                onChange={handleDateRangeChange}
+              >
+                <MenuItem value="today">Bugün</MenuItem>
+                <MenuItem value="yesterday">Dün</MenuItem>
+                <MenuItem value="thisWeek">Bu Hafta</MenuItem>
+                <MenuItem value="custom">Özel Aralık</MenuItem>
+              </Select>
+            </FormControl>
 
-          <TabPanel value={tabValue} index={0}>
-            <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>Tarih Aralığı</InputLabel>
-                <Select
-                  value={dateRange}
-                  label="Tarih Aralığı"
-                  onChange={handleDateRangeChange}
-                >
-                  <MenuItem value="today">Bugün</MenuItem>
-                  <MenuItem value="yesterday">Dün</MenuItem>
-                  <MenuItem value="thisWeek">Bu Hafta</MenuItem>
-                  <MenuItem value="custom">Özel Aralık</MenuItem>
-                </Select>
-              </FormControl>
+            {dateRange === 'custom' && (
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={trLocale}>
+                <DatePicker
+                  label="Başlangıç Tarihi"
+                  value={startDate}
+                  onChange={(newValue) => setStartDate(newValue)}
+                />
+                <DatePicker
+                  label="Bitiş Tarihi"
+                  value={endDate}
+                  onChange={(newValue) => setEndDate(newValue)}
+                />
+              </LocalizationProvider>
+            )}
+          </Box>
 
-              {dateRange === 'custom' && (
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={trLocale}>
-                  <DatePicker
-                    label="Başlangıç Tarihi"
-                    value={startDate}
-                    onChange={(newValue) => setStartDate(newValue)}
-                  />
-                  <DatePicker
-                    label="Bitiş Tarihi"
-                    value={endDate}
-                    onChange={(newValue) => setEndDate(newValue)}
-                  />
-                </LocalizationProvider>
-              )}
-            </Box>
-
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Ürün Adı</TableCell>
-                    <TableCell>Kategori</TableCell>
-                    <TableCell align="right">Satış Adedi</TableCell>
-                    <TableCell align="right">Toplam Tutar</TableCell>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Ürün Adı</TableCell>
+                  <TableCell>Kategori</TableCell>
+                  <TableCell align="right">Satış Adedi</TableCell>
+                  <TableCell align="right">Toplam Tutar</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.entries(filteredStats.productStats).map(([name, data]) => (
+                  <TableRow key={name}>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{data.category}</TableCell>
+                    <TableCell align="right">{data.quantity}</TableCell>
+                    <TableCell align="right">{data.total}₺</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(filteredStats.productStats).map(([name, data]) => (
-                    <TableRow key={name}>
-                      <TableCell>{name}</TableCell>
-                      <TableCell>{data.category}</TableCell>
-                      <TableCell align="right">{data.quantity}</TableCell>
-                      <TableCell align="right">{data.total}₺</TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow>
-                    <TableCell colSpan={2}>
-                      <Typography variant="h6">Toplam</Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Typography variant="h6">
-                        {Object.values(filteredStats.productStats).reduce((sum, data) => sum + data.quantity, 0)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Typography variant="h6">{filteredStats.totalSales}₺</Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell colSpan={4} align="right">
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Toplam Ekmek: {
-                          Object.entries(filteredStats.productStats).reduce((sum, [name, data]) => {
-                            if (
-                              data.category === 'İçecekler & Atıştırmalık' ||
-                              data.category === 'Takolar' ||
-                              name.toLowerCase().includes('tako')
-                            ) return sum;
-                            let ekmek = 1;
-                            if (name.toLowerCase().includes('maksi')) ekmek = 2;
-                            return sum + ekmek * data.quantity;
-                          }, 0)
-                        }
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={1}>
-            {/* Analiz Sekmesi */}
-            <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>Tarih Aralığı</InputLabel>
-                <Select
-                  value={dateRange}
-                  label="Tarih Aralığı"
-                  onChange={handleDateRangeChange}
-                >
-                  <MenuItem value="today">Bugün</MenuItem>
-                  <MenuItem value="yesterday">Dün</MenuItem>
-                  <MenuItem value="thisWeek">Bu Hafta</MenuItem>
-                  <MenuItem value="custom">Özel Aralık</MenuItem>
-                </Select>
-              </FormControl>
-              {dateRange === 'custom' && (
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={trLocale}>
-                  <DatePicker
-                    label="Başlangıç Tarihi"
-                    value={startDate}
-                    onChange={(newValue) => setStartDate(newValue)}
-                  />
-                  <DatePicker
-                    label="Bitiş Tarihi"
-                    value={endDate}
-                    onChange={(newValue) => setEndDate(newValue)}
-                  />
-                </LocalizationProvider>
-              )}
-              <FormControl sx={{ minWidth: 160 }}>
-                <InputLabel>Kategori</InputLabel>
-                <Select
-                  value={analysisCategory || 'all'}
-                  label="Kategori"
-                  onChange={e => setAnalysisCategory(e.target.value)}
-                >
-                  <MenuItem value="all">Tümü</MenuItem>
-                  <MenuItem value="Et">Et</MenuItem>
-                  <MenuItem value="Tavuk">Tavuk</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                label="Ürün İsmi Ara"
-                value={analysisProductName}
-                onChange={e => setAnalysisProductName(e.target.value)}
-                sx={{ minWidth: 200 }}
-              />
-            </Box>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={analysisChartData} margin={{ top: 16, right: 32, left: 16, bottom: 16 }}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="dineInQuantity" fill="#e53935" name="İçeri Satış" />
-                <Bar dataKey="deliveryQuantity" fill="#1976d2" name="Kurye Satış" />
-              </BarChart>
-            </ResponsiveContainer>
-          </TabPanel>
-
-
+                ))}
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    <Typography variant="h6">Toplam</Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="h6">
+                      {Object.values(filteredStats.productStats).reduce((sum, data) => sum + data.quantity, 0)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="h6">{filteredStats.totalSales}₺</Typography>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={4} align="right">
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      Toplam Ekmek: {
+                        Object.entries(filteredStats.productStats).reduce((sum, [name, data]) => {
+                          if (
+                            data.category === 'İçecekler & Atıştırmalık' ||
+                            data.category === 'Takolar' ||
+                            name.toLowerCase().includes('tako')
+                          ) return sum;
+                          let ekmek = 1;
+                          if (name.toLowerCase().includes('maksi')) ekmek = 2;
+                          return sum + ekmek * data.quantity;
+                        }, 0)
+                      }
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
       </Container>
     </Box>
