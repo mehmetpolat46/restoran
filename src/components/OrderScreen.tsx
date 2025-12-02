@@ -38,7 +38,6 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import HomeIcon from '@mui/icons-material/Home';
 import OrderCompleteModal from './OrderCompleteModal';
-import { useOrders } from '../context/OrderContext';
 import {
   ArrowBack as ArrowBackIcon,
   ShoppingCart as ShoppingCartIcon,
@@ -360,7 +359,6 @@ const menuItems: MenuItem[] = [
 const OrderScreen: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { addOrder } = useOrders();
   const orderType = searchParams.get('type') === 'delivery' ? 'delivery' : 'dine-in';
   const [selectedCategory, setSelectedCategory] = useState<string>(categories[0]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -511,50 +509,7 @@ const OrderScreen: React.FC = () => {
     setShowSuccessMessage(true);
   };
 
-  const exportToExcel = () => {
-    // Excel başlıkları
-    const headers = [
-      'Tarih',
-      'Sipariş Tipi',
-      'Ürün',
-      'Adet',
-      'Birim Fiyat',
-      'Toplam Fiyat',
-      'Telefon',
-      'Adres',
-      'Ödeme Tipi'
-    ];
 
-    // Siparişleri Excel formatına dönüştür
-    const excelData = cart.map(item => [
-      new Date().toLocaleString('tr-TR'),
-      orderType === 'dine-in' ? 'İçeride' : 'Kurye',
-      item.name,
-      item.quantity,
-      item.price,
-      item.price * item.quantity,
-      orderType === 'delivery' ? phone : '-',
-      orderType === 'delivery' ? address : '-',
-      orderType === 'delivery' ? (paymentType === 'cash' ? 'Nakit' : 'Kredi Kartı') : '-'
-    ]);
-
-    // CSV formatına dönüştür
-    const csvContent = [
-      headers.join(','),
-      ...excelData.map(row => row.join(','))
-    ].join('\n');
-
-    // CSV dosyasını indir
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `uslu_doner_siparis_${new Date().toLocaleString('tr-TR').replace(/[/\\?%*:|"<>]/g, '-')}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const handleAddToCart = (item: MenuItem) => {
     setCart(prevCart => {
@@ -597,24 +552,6 @@ const OrderScreen: React.FC = () => {
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
-              startIcon={<BarChartIcon />}
-              onClick={() => navigate('/admin')}
-              size="small"
-              sx={{ fontSize: '0.8rem' }}
-              color={orderType === 'delivery' ? 'primary' : 'error'}
-            >
-              Raporlar
-            </Button>
-            <Button
-              startIcon={<SettingsIcon />}
-              onClick={() => navigate('/admin')}
-              size="small"
-              sx={{ fontSize: '0.8rem' }}
-              color={orderType === 'delivery' ? 'primary' : 'error'}
-            >
-              Ayarlar
-            </Button>
-            <Button
               startIcon={<HomeIcon />}
               onClick={() => navigate('/')}
               size="small"
@@ -622,15 +559,6 @@ const OrderScreen: React.FC = () => {
               color={orderType === 'delivery' ? 'primary' : 'error'}
             >
               Ana Sayfa
-            </Button>
-            <Button
-              startIcon={<PrintIcon />}
-              onClick={exportToExcel}
-              size="small"
-              sx={{ fontSize: '0.8rem' }}
-              color={orderType === 'delivery' ? 'primary' : 'error'}
-            >
-              Excel
             </Button>
             <IconButton color="inherit" size="small">
               <Badge badgeContent={cart.length} color="primary">
