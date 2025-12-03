@@ -22,11 +22,9 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import HomeIcon from '@mui/icons-material/Home';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import OrderCompleteModal from './OrderCompleteModal';
-import {
-  ArrowBack as ArrowBackIcon,
-  ShoppingCart as ShoppingCartIcon,
-} from '@mui/icons-material';
 import { CartItem } from '../types';
 
 interface Product {
@@ -357,72 +355,10 @@ const OrderScreen: React.FC = () => {
   };
 
   const handleComplete = () => {
-    // Yazdırma işlemi
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      const content = `
-        <html>
-          <head>
-            <title>Uslu Döner - Sipariş Fişi</title>
-            <style>
-              body { font-family: monospace; padding: 20px; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .divider { border-top: 1px dashed #000; margin: 10px 0; }
-              .total { font-weight: bold; }
-              .right { text-align: right; }
-              .item { margin: 5px 0; }
-              .price { float: right; }
-              .clear { clear: both; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h2>🍽️ USLU DÖNER</h2>
-              <p>📍 Sipariş Tipi: ${orderType === 'dine-in' ? 'İçeride' : 'Kurye'}</p>
-              <p>📆 ${new Date().toLocaleString('tr-TR')}</p>
-            </div>
-            <div class="divider"></div>
-            ${cart.map(item => `
-              <div class="item">
-                <span>${item.quantity}x ${item.name}</span>
-                <span class="price">${(item.price * item.quantity).toFixed(2)}₺</span>
-                <div class="clear"></div>
-              </div>
-            `).join('')}
-            <div class="divider"></div>
-            ${orderType === 'delivery' ? `
-              <div class="item">
-                <span>Kurye Ücreti</span>
-                <span class="price">${calculateDeliveryFee().toFixed(2)}₺</span>
-                <div class="clear"></div>
-              </div>
-            ` : ''}
-            <div class="divider"></div>
-            <div class="total right">
-              Toplam: ${calculateTotal().toFixed(2)}₺
-            </div>
-            <div class="divider"></div>
-            <div style="text-align: center; margin-top: 20px;">
-              <p>Bizi tercih ettiğiniz için teşekkür ederiz!</p>
-              <p>Afiyet olsun...</p>
-            </div>
-          </body>
-        </html>
-      `;
-      printWindow.document.write(content);
-      printWindow.document.close();
-      printWindow.print();
-    }
-
-    // Sepeti temizle
     setCart([]);
     setQuantities({});
-
-    // Başarı mesajını göster
     setShowSuccessMessage(true);
   };
-
-
 
 
 

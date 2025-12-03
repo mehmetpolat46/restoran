@@ -20,12 +20,10 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { CartItem } from '../types';
+import { useOrders } from '../context/OrderContext';
+import { CartItem, OrderItem } from '../types';
 
 interface OrderCompleteModalProps {
   open: boolean;
@@ -44,6 +42,7 @@ const OrderCompleteModal: React.FC<OrderCompleteModalProps> = ({
   total,
   onComplete
 }) => {
+  const { addOrder } = useOrders();
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [paymentType, setPaymentType] = useState<'cash' | 'card'>('cash');
@@ -59,6 +58,21 @@ const OrderCompleteModal: React.FC<OrderCompleteModalProps> = ({
   }, [open]);
 
   const handleComplete = () => {
+  const orderItems: OrderItem[] = cart.map(item => ({
+    ...item,
+    id: item.id.toString(),
+    category: item.category || 'default',
+    name: item.name.toLowerCase().includes('lavaş') ? `${item.name} (Ekstra Lavaş)` : item.name
+  }));
+
+  addOrder({
+    type: initialOrderType,
+    items: orderItems,
+      total: total,
+    phone: initialOrderType === 'delivery' ? phone : undefined,
+    address: initialOrderType === 'delivery' ? address : undefined,
+    paymentType: initialOrderType === 'delivery' ? paymentType : undefined,
+  });
 
     // Yazdırma işlemi
     const printWindow = window.open('', '_blank');

@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import WelcomeScreen from './components/WelcomeScreen';
 import OrderScreen from './components/OrderScreen';
+import AdminPanel from './components/AdminPanel';
+import { OrderProvider } from './context/OrderContext';
 
 const theme = createTheme({
   palette: {
@@ -67,12 +69,15 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<WelcomeScreen />} />
-          <Route path="/order" element={<OrderScreen />} />
-        </Routes>
-      </Router>
+      <OrderProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<WelcomeScreen />} />
+            <Route path="/order" element={<OrderScreen />} />
+            <Route path="/admin" element={<AdminPanel />} />
+          </Routes>
+        </Router>
+      </OrderProvider>
     </ThemeProvider>
   );
 }

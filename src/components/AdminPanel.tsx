@@ -65,11 +65,10 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  // Siparişleri seçilen tarih aralığına göre filtrele
   const startOfDay = startDate ? new Date(startDate) : null;
-  if (startOfDay) startOfDay.setHours(0,0,0,0);
+  if (startOfDay) startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = endDate ? new Date(endDate) : null;
-  if (endOfDay) endOfDay.setHours(23,59,59,999);
+  if (endOfDay) endOfDay.setHours(23, 59, 59, 999);
   const filteredOrders = orders.filter(order => {
     const orderDate = new Date(order.date);
     if (startOfDay && orderDate < startOfDay) return false;
@@ -81,12 +80,9 @@ const AdminPanel: React.FC = () => {
 
 
 
-  // stats fonksiyonunu da filtrelenmiş siparişlerle oluştur
   const filteredStats = (() => {
     const stats = {
       totalSales: 0,
-      totalOrders: filteredOrders.length,
-      totalDeliveryOrders: 0,
       productStats: {} as {
         [key: string]: {
           quantity: number;
@@ -97,9 +93,6 @@ const AdminPanel: React.FC = () => {
     };
     filteredOrders.forEach((order) => {
       stats.totalSales += order.total;
-      if (order.type === 'delivery') {
-        stats.totalDeliveryOrders++;
-      }
       order.items.forEach((item) => {
         if (!stats.productStats[item.name]) {
           stats.productStats[item.name] = {
